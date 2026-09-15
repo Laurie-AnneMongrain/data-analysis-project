@@ -1,1 +1,54 @@
+/*
+===========================================
+PART-TO-WHOLE PROPORTIONAL ANALYSIS
+===========================================
+
+Purpose:
+Measure how individual categories contribute to the overall total. This analysis
+helps identify which segments drive the most value and highlights distribution
+patterns across the business.
+
+Highlights:
+1. Calculate total sales by category.
+2. Compute each category’s percentage contribution to overall sales.
+3. Use window functions to retrieve the overall total without additional joins.
+4. Apply part-to-whole logic:
+      (category_sales / total_sales) * 100
+
+Key Concepts:
+- Contribution analysis
+- Part-to-whole relationships
+- Window functions (SUM OVER ())
+- Category-level performance evaluation
+
+Tables used:
+- gold.fact_sales
+- gold.dim_products
+
+===========================================
+*/
+
+-- Part-to-Whole Proportional Analysis
+-- Identifies which product categories contribute the most to overall sales.
+
+WITH category_sales AS (
+    SELECT
+        p.category,
+        SUM(f.sales_amount) AS total_sales
+    FROM gold.fact_sales f
+    LEFT JOIN gold.dim_products p
+        ON p.product_key = f.product_key
+    GROUP BY p.category
+)
+
+SELECT
+    category,
+    total_sales,
+    SUM(total_sales) OVER () AS overall_sales,
+    CONCAT(
+        ROUND((total_sales::float / SUM(total_sales) OVER ()) * 100, 2),
+        '%'
+    ) AS percentage_of_total
+FROM category_sales
+ORDER BY total_sales DESC;
 
