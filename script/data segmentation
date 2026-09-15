@@ -1,1 +1,57 @@
+/*
+===========================================
+DATA SEGMENTATION
+===========================================
 
+Purpose:
+Segment data into meaningful ranges or categories to better understand patterns,
+behavior, and relationships between measures. Segmentation is a core analytical
+technique used to compare groups, identify high-value segments, and uncover
+distribution trends.
+
+Highlights:
+1. Group products into cost ranges to analyze pricing distribution.
+2. Segment customers based on spending behavior and lifecycle:
+   - VIP: High spenders with long history
+   - Regular: Lower spenders with long history
+   - New: Customers with short history
+3. Use CASE WHEN logic to create custom buckets and categories.
+4. Aggregate counts within each segment to understand group size and impact.
+
+Key Concepts:
+- Range-based segmentation
+- Behavioral segmentation
+- CASE WHEN logic
+- Group-level aggregation
+- Distribution analysis
+
+Tables used:
+- gold.dim_products
+- gold.fact_sales
+- gold.dim_customers
+
+===========================================
+*/
+
+-- Segment products into cost ranges and count how many products fall into each segment.
+
+WITH product_segments AS (
+    SELECT
+        product_key,
+        product_name,
+        cost,
+        CASE
+            WHEN cost < 100 THEN 'Below 100'
+            WHEN cost BETWEEN 100 AND 500 THEN '100-500'
+            WHEN cost BETWEEN 500 AND 1000 THEN '500-1000'
+            ELSE 'Above 1000'
+        END AS cost_range
+    FROM gold.dim_products
+)
+
+SELECT
+    cost_range,
+    COUNT(product_key) AS total_products
+FROM product_segments
+GROUP BY cost_range
+ORDER BY total_products DESC;
