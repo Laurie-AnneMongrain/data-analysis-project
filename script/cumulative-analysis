@@ -1,1 +1,43 @@
 
+/*
+===========================================
+CUMULATIVE ANALYSIS
+===========================================
+
+Purpose:
+Evaluate business performance over time by progressively aggregating key metrics.
+Cumulative analysis helps determine whether the business is growing, slowing down,
+or experiencing seasonal fluctuations.
+
+What this query does:
+1. Aggregates total sales by year (or month, depending on the date granularity).
+2. Computes a running total of sales using a window function.
+3. Produces a cumulative trend line that reveals long-term growth patterns.
+
+Key Concepts:
+- Progressive aggregation
+- Running totals using window functions
+- Trend evaluation (growth vs decline)
+- Time-series business analysis
+
+Tables used:
+- gold.fact_sales
+
+===========================================
+*/
+-- Cumulative Analysis
+-- Calculates total sales per period and computes a running total to evaluate growth over time.
+
+SELECT
+    order_date,
+    total_sales,
+    SUM(total_sales) OVER (ORDER BY order_date) AS running_total_sales
+FROM (
+    SELECT
+        DATE_TRUNC('year', order_date) AS order_date,
+        SUM(sales_amount) AS total_sales
+    FROM gold.fact_sales
+    WHERE order_date IS NOT NULL
+    GROUP BY DATE_TRUNC('year', order_date)
+    ORDER BY DATE_TRUNC('year', order_date)
+) t;
