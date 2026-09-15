@@ -1,1 +1,42 @@
+/*
+===========================================
+CHANGE-OVER-TIME ANALYSIS
+===========================================
 
+Purpose:
+Analyze how key business measures evolve over time. This type of analysis helps
+identify trends, seasonality, growth patterns, and changes in customer behavior.
+
+What this query does:
+1. Aggregates sales data by year and month.
+2. Calculates total sales, total customers, and total quantity for each period.
+3. Produces a time-series view that supports trend analysis and seasonal insights.
+
+Key Concepts:
+- Date-based aggregation (year, month)
+- Trend and seasonality detection
+- Business KPI tracking over time
+
+Tables used:
+- gold.fact_sales
+
+===========================================
+*/
+
+-- Change-Over-Time Analysis
+-- Aggregates key business metrics by year and month to identify trends and seasonality.
+
+SELECT
+    EXTRACT(YEAR FROM order_date::date) AS order_year,
+    EXTRACT(MONTH FROM order_date::date) AS order_month,
+    SUM(sales_amount) AS total_sales,
+    COUNT(DISTINCT customer_key) AS total_customers,
+    SUM(quantity) AS total_quantity
+FROM gold.fact_sales
+WHERE order_date IS NOT NULL
+GROUP BY
+    EXTRACT(YEAR FROM order_date::date),
+    EXTRACT(MONTH FROM order_date::date)
+ORDER BY
+    order_year,
+    order_month;
